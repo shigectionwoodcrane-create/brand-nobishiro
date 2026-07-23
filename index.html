@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ブランドのノビシロ診断</title>
+<style>
+  :root{
+    --ink:#1a2438;
+    --accent:#1f3a5f;
+    --accent-soft:#2f4d78;
+    --line:#e2e6ee;
+    --bg:#f7f8fb;
+    --card:#ffffff;
+    --muted:#6b7488;
+    --bar-bg:#eef1f6;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Meiryo",sans-serif;
+    color:var(--ink);
+    background:var(--bg);
+    line-height:1.8;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:720px;
+    margin:0 auto;
+    padding:32px 20px 80px;
+  }
+  .screen{
+    animation:fade .4s ease;
+  }
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .hidden{display:none !important;}
+
+  h1{
+    font-size:26px;
+    font-weight:700;
+    letter-spacing:.02em;
+    margin:0 0 8px;
+    color:var(--accent);
+  }
+  .lead{
+    color:var(--muted);
+    font-size:13px;
+    letter-spacing:.15em;
+    margin:0 0 28px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:32px 28px;
+    box-shadow:0 1px 2px rgba(26,36,56,.04);
+  }
+  p{margin:0 0 16px;}
+  .desc{
+    font-size:16px;
+    color:var(--ink);
+  }
+  .desc-list{
+    margin:18px 0 0;
+    padding-left:20px;
+  }
+  .desc-list li{
+    font-size:15px;
+    color:var(--ink);
+    margin-bottom:8px;
+  }
+
+  .btn{
+    display:inline-block;
+    border:none;
+    background:var(--accent);
+    color:#fff;
+    font-family:inherit;
+    font-size:16px;
+    font-weight:600;
+    padding:15px 34px;
+    border-radius:10px;
+    cursor:pointer;
+    letter-spacing:.04em;
+    transition:background .2s;
+  }
+  .btn:hover{background:var(--accent-soft);}
+  .btn.full{display:block;width:100%;text-align:center;}
+  .btn.ghost{
+    background:transparent;
+    color:var(--accent);
+    border:1px solid var(--line);
+  }
+  .btn.ghost:hover{background:#f0f3f8;}
+  .btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px;}
+  .btn-row .btn{flex:1;min-width:180px;}
+
+  .center{text-align:center;margin-top:28px;}
+
+  /* 業態選択 */
+  .type-grid{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    margin-top:26px;
+  }
+  .type-btn{
+    text-align:left;
+    border:1px solid var(--line);
+    background:#fff;
+    border-radius:12px;
+    padding:20px 22px;
+    cursor:pointer;
+    font-family:inherit;
+    color:var(--ink);
+    transition:border-color .2s, background .2s;
+  }
+  .type-btn:hover{border-color:var(--accent);background:#f6f9fd;}
+  .type-btn .t-title{font-size:18px;font-weight:700;color:var(--accent);}
+  .type-btn .t-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+
+  /* 質問画面 */
+  .progress-head{
+    display:flex;
+    justify-content:flex-end;
+    align-items:baseline;
+    margin-bottom:10px;
+  }
+  .q-count{font-size:13px;color:var(--muted);letter-spacing:.1em;}
+  .progress-bar{
+    height:6px;
+    background:var(--bar-bg);
+    border-radius:99px;
+    overflow:hidden;
+    margin-bottom:26px;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--accent);
+    width:0;
+    border-radius:99px;
+    transition:width .35s ease;
+  }
+  .q-text{
+    font-size:20px;
+    font-weight:600;
+    line-height:1.7;
+    margin:6px 0 26px;
+    min-height:3.4em;
+  }
+  .choices{display:flex;flex-direction:column;gap:12px;}
+  .choice{
+    border:1px solid var(--line);
+    background:#fff;
+    border-radius:11px;
+    padding:16px 20px;
+    font-family:inherit;
+    font-size:16px;
+    color:var(--ink);
+    text-align:left;
+    cursor:pointer;
+    transition:border-color .18s, background .18s;
+  }
+  .choice:hover{border-color:var(--accent);background:#f6f9fd;}
+  .choice.selected{border-color:var(--accent);background:#eaf0f8;font-weight:600;}
+  .back-link{
+    display:inline-block;
+    margin-top:22px;
+    color:var(--muted);
+    font-size:14px;
+    background:none;
+    border:none;
+    cursor:pointer;
+    font-family:inherit;
+    padding:0;
+  }
+  .back-link:hover{color:var(--accent);text-decoration:underline;}
+  .back-link[disabled]{opacity:.35;cursor:default;text-decoration:none;}
+
+  /* 結果画面 */
+  .result-meta{font-size:12px;color:var(--muted);letter-spacing:.08em;margin-bottom:6px;}
+  .score-hero{
+    text-align:center;
+    padding:8px 0 12px;
+  }
+  .score-num{
+    font-size:60px;
+    font-weight:700;
+    color:var(--accent);
+    line-height:1.1;
+  }
+  .score-num span{font-size:22px;color:var(--muted);font-weight:400;}
+  .score-tier{
+    font-size:15px;
+    font-weight:700;
+    color:var(--accent-soft);
+    margin-top:4px;
+    letter-spacing:.04em;
+  }
+  .summary{
+    font-size:15px;
+    color:var(--ink);
+    margin-top:16px;
+    text-align:left;
+  }
+  .section-title{
+    font-size:16px;
+    font-weight:700;
+    color:var(--accent);
+    letter-spacing:.04em;
+    margin:0 0 4px;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--line);
+  }
+  .block{margin-top:34px;}
+
+  .radar-wrap{text-align:center;margin-top:18px;}
+  svg{max-width:100%;height:auto;}
+
+  .cat-bar-row{margin-bottom:16px;}
+  .cat-bar-head{
+    display:flex;
+    justify-content:space-between;
+    font-size:14px;
+    margin-bottom:6px;
+  }
+  .cat-bar-head .pct{color:var(--accent-soft);font-weight:700;}
+  .cat-bar-track{
+    height:9px;
+    background:var(--bar-bg);
+    border-radius:99px;
+    overflow:hidden;
+  }
+  .cat-bar-fill{
+    height:100%;
+    background:var(--accent);
+    border-radius:99px;
+  }
+
+  .tsubo{
+    border:1px solid var(--line);
+    border-left:4px solid var(--accent);
+    border-radius:10px;
+    padding:22px 24px;
+    margin-top:18px;
+    background:#fff;
+  }
+  .tsubo-rank{
+    font-size:12px;
+    color:var(--muted);
+    letter-spacing:.1em;
+  }
+  .tsubo-name{
+    font-size:19px;
+    font-weight:700;
+    color:var(--accent);
+    margin:2px 0 4px;
+  }
+  .tsubo-sub{font-size:13px;color:var(--muted);margin:-2px 0 4px;}
+  .tsubo-pct{font-size:13px;color:var(--accent-soft);font-weight:600;margin-bottom:12px;}
+  .tsubo h4{
+    font-size:14px;
+    color:var(--ink);
+    margin:16px 0 6px;
+    font-weight:700;
+  }
+  .tsubo p{font-size:15px;margin:0;}
+  .tsubo ul{margin:6px 0 0;padding-left:20px;}
+  .tsubo li{font-size:15px;margin-bottom:6px;}
+
+  /* 裏づけとなる研究 */
+  .evidence{
+    background:#f2f5fa;
+    border-radius:9px;
+    padding:14px 16px;
+    margin-top:16px;
+  }
+  .evidence .ev-label{
+    font-size:11px;
+    letter-spacing:.1em;
+    color:var(--muted);
+    margin-bottom:8px;
+  }
+  .evidence .ev-item{margin-bottom:10px;}
+  .evidence .ev-item:last-child{margin-bottom:0;}
+  .evidence .ev-name{font-weight:700;color:var(--accent);font-size:13.5px;}
+  .evidence .ev-text{font-size:14px;color:var(--ink);margin-top:3px;line-height:1.7;}
+  .evidence b{color:var(--accent-soft);font-weight:700;}
+
+  .sources{
+    font-size:11.5px;
+    color:var(--muted);
+    line-height:1.7;
+    margin:16px 0 0;
+    padding-left:18px;
+  }
+  .sources li{margin-bottom:4px;}
+
+  .print-note{font-size:12px;color:var(--muted);text-align:center;margin-top:8px;}
+
+  @media (max-width:520px){
+    h1{font-size:22px;}
+    .card{padding:24px 18px;}
+    .q-text{font-size:18px;}
+    .score-num{font-size:48px;}
+  }
+
+  /* 印刷 */
+  @media print{
+    body{background:#fff;}
+    .wrap{max-width:100%;padding:0;}
+    .no-print{display:none !important;}
+    .card{border:none;box-shadow:none;padding:0;}
+    .block{page-break-inside:avoid;}
+    .tsubo{page-break-inside:avoid;}
+    .btn-row{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 導入画面 -->
+  <section id="screen-intro" class="screen">
+    <h1>ブランドのノビシロ診断</h1>
+    <p class="lead">BRAND HEADROOM DIAGNOSIS</p>
+    <div class="card">
+      <p class="desc">自社のブランドに、あとどれだけ伸びる余地があるか。50問・約7分の設問に答えると、その場で総合スコア・8カテゴリのバランス・最優先のノビシロと打ち手が表示されます。</p>
+      <ul class="desc-list">
+        <li>世界の実証研究（IPA・Kantar・Gallupなど）にもとづく50問。</li>
+        <li>登録不要。結果はその場ですべて表示されます。</li>
+      </ul>
+      <div class="center">
+        <button class="btn" onclick="goType()">診断をはじめる</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 業態選択 -->
+  <section id="screen-type" class="screen hidden">
+    <h1>業態の選択</h1>
+    <p class="lead">STEP 1 / 2</p>
+    <div class="card">
+      <p class="desc">貴社の事業の業態をお選びください。想起にまつわる裏づけ研究を、業態に合わせてお見せします。</p>
+      <div class="type-grid">
+        <button class="type-btn" onclick="selectType('B2B')">
+          <div class="t-title">B2B</div>
+          <div class="t-sub">主に企業・法人を顧客とする事業</div>
+        </button>
+        <button class="type-btn" onclick="selectType('B2C')">
+          <div class="t-title">B2C</div>
+          <div class="t-sub">主に一般消費者を顧客とする事業</div>
+        </button>
+        <button class="type-btn" onclick="selectType('どちらも')">
+          <div class="t-title">どちらも</div>
+          <div class="t-sub">法人・消費者の両方を顧客とする事業</div>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 質問画面 -->
+  <section id="screen-quiz" class="screen hidden">
+    <div class="progress-head">
+      <span class="q-count" id="qCount"></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="card">
+      <div class="q-text" id="qText"></div>
+      <div class="choices">
+        <button class="choice" onclick="answer(3)">できている</button>
+        <button class="choice" onclick="answer(2)">おおむねできている</button>
+        <button class="choice" onclick="answer(1)">あまりできていない</button>
+        <button class="choice" onclick="answer(0)">できていない</button>
+      </div>
+      <button class="back-link" id="backLink" onclick="prevQuestion()">前の質問に戻る</button>
+    </div>
+  </section>
+
+  <!-- 結果画面 -->
+  <section id="screen-result" class="screen hidden">
+    <div class="card">
+      <div class="result-meta" id="resultType"></div>
+      <div class="section-title">診断結果</div>
+
+      <div class="score-hero">
+        <div class="score-num" id="totalScore">0<span> / 100</span></div>
+        <div class="score-tier" id="scoreTier"></div>
+        <div class="summary" id="summaryText"></div>
+      </div>
+
+      <div class="block">
+        <div class="section-title">8カテゴリのバランス</div>
+        <div class="radar-wrap" id="radarWrap"></div>
+      </div>
+
+      <div class="block">
+        <div class="section-title">カテゴリ別スコア（得点率）</div>
+        <div id="catBars" style="margin-top:18px;"></div>
+      </div>
+
+      <div class="block">
+        <div class="section-title">最優先のノビシロ</div>
+        <div id="tsuboList"></div>
+      </div>
+
+      <div class="block">
+        <div class="section-title">裏づけとした主な出典</div>
+        <ul class="sources">
+          <li>Les Binet &amp; Peter Field "The Long and the Short of It" (IPA, 2013)</li>
+          <li>Byron Sharp "How Brands Grow" (Ehrenberg-Bass Institute)</li>
+          <li>LinkedIn B2B Institute × Ehrenberg-Bass Institute "The 95-5 Rule"</li>
+          <li>Kantar BrandZ（52市場・21,000超ブランドの消費者調査データベース）</li>
+          <li>Jim Stengel "Grow" (2011)</li>
+          <li>Edelman Trust Barometer (2019 / 2026)</li>
+          <li>Gallup Q12 Meta-Analysis</li>
+          <li>McKinsey &amp; Company のB2Bブランディング調査報告</li>
+          <li>Interbrand "Best Global Brands" ブランド強度10因子</li>
+        </ul>
+      </div>
+
+      <div class="btn-row no-print">
+        <button class="btn ghost" onclick="restart()">もう一度診断する</button>
+        <button class="btn" onclick="window.print()">結果を印刷・PDF保存</button>
+      </div>
+      <p class="print-note no-print">印刷ダイアログで「PDFに保存」を選ぶと、結果をPDFとして保存できます。</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ===== カテゴリ定義（index順） ===== */
+const CATEGORIES = [
+  { name:"独自性",     short:"独自性",   sub:"競合と間違われない「らしさ」があるか" },
+  { name:"想起",       short:"想起",     sub:"買う場面で最初に思い出されるか" },
+  { name:"一貫性",     short:"一貫性",   sub:"ロゴ・色・言葉がどの接点でも揃っているか" },
+  { name:"存在意義",   short:"存在意義", sub:"何のための会社かが明確で、共有されているか" },
+  { name:"信頼",       short:"信頼",     sub:"約束を守り続けているか" },
+  { name:"社内浸透",   short:"社内浸透", sub:"社員がブランドを自分の言葉で語れるか" },
+  { name:"投資バランス", short:"投資",   sub:"目先の販促と長期のブランドづくりを意図して配分しているか" },
+  { name:"経営接続",   short:"経営接続", sub:"ブランドが経営の議題になり、測られているか" }
+];
+
+/* ===== 設問（出題順に {t:設問文, c:カテゴリindex}） =====
+   出題順は 0,2,4,6,1,3,5,7 の巡回を5周、そのあと増補10問。
+   独自性(c:0)・想起(c:1)は各7問、残り6カテゴリは各6問・計50問。
+   同一カテゴリが連続しないよう配列済み。 */
+const QUESTIONS = [
+  // 1周目
+  { t:"自社の紹介文から社名を伏せても、「あの会社だ」とわかる", c:0 },
+  { t:"ロゴや色の使い方に、社内で守られたルールがある", c:2 },
+  { t:"顧客への約束を、無理をしてでも守り続けている", c:4 },
+  { t:"目先の販促と長期のブランドづくり、両方に予算を割いている", c:6 },
+  { t:"顧客が必要になった瞬間、まっさきに自社を思い出してくれる", c:1 },
+  { t:"「何のための会社か」を、経営者が自分の言葉で語れる", c:3 },
+  { t:"社員が自分の言葉で、自社は何の会社かを語れる", c:5 },
+  { t:"ブランドが、経営会議の議題として定期的に扱われる", c:7 },
+  // 2周目
+  { t:"競合と自社の違いを、顧客に一言で説明できる", c:0 },
+  { t:"営業資料もウェブも、見た目のトーンが揃っている", c:2 },
+  { t:"トラブルが起きた時、ごまかさず誠実に対応している", c:4 },
+  { t:"すぐ売上にならない活動にも、意図をもって投資している", c:6 },
+  { t:"「この分野ならあの会社」と、業界で名前が挙がる", c:1 },
+  { t:"自社の存在意義が、一文で言い表され共有されている", c:3 },
+  { t:"新しく入った人でも、自社が大切にする価値を知っている", c:5 },
+  { t:"ブランドの状態を測る指標があり、定点で見ている", c:7 },
+  // 3周目
+  { t:"「なぜ他社ではなく御社なのか」に、迷わず答えられる", c:0 },
+  { t:"どの窓口・どの担当でも、伝える言葉のトーンが一致している", c:2 },
+  { t:"「あの会社なら安心」と、顧客から言ってもらえる", c:4 },
+  { t:"値引きや短期キャンペーンだけに頼りきっていない", c:6 },
+  { t:"今すぐ買う予定のない相手にも、忘れられないよう接点を保つ", c:1 },
+  { t:"利益だけでなく「誰の生活をどう良くするか」が定まっている", c:3 },
+  { t:"現場の判断に、ブランドの考え方が自然と表れている", c:5 },
+  { t:"経営者がブランドを、自社の大切な資産と考えている", c:7 },
+  // 4周目
+  { t:"自社ならではの強みを、どの社員に聞いても同じ答えが返る", c:0 },
+  { t:"決まり文句やタグラインを、長く変えずに使い続けている", c:2 },
+  { t:"品質やサービスの水準が、いつ頼んでもぶれない", c:4 },
+  { t:"ブランドづくりの予算が、景気で真っ先に削られたりしない", c:6 },
+  { t:"展示会やウェブで、自社を思い出す機会を意図してつくっている", c:1 },
+  { t:"大事な判断に迷った時、立ち返る理念がある", c:3 },
+  { t:"社員が自社を、家族や友人に誇りをもって話せる", c:5 },
+  { t:"ブランドの取り組みが、事業の成果と結びつけて語られる", c:7 },
+  // 5周目
+  { t:"顧客が自社を選ぶ理由を、価格や納期以外で説明できる", c:0 },
+  { t:"名刺・封筒・看板まで、同じ世界観で揃っている", c:2 },
+  { t:"一度きりで終わらず、長く付き合う顧客が多い", c:4 },
+  { t:"短期の成果と長期の育成の配分を、意図して決めている", c:6 },
+  { t:"商談で「そういえば御社」と、相手から名前が出ることがある", c:1 },
+  { t:"存在意義が、日々の商品やサービスに実際に反映されている", c:3 },
+  { t:"経営の想いが、現場の一人ひとりまで届いている", c:5 },
+  { t:"認知や評判の変化を、数字で把握している", c:7 },
+  // 増補10問（0,2,1,3,0,4,1,5,6,7）
+  { t:"同業者と並べても、自社の商品はひと目で見分けがつく", c:0 },
+  { t:"取引が長く続いても、ブランドの見え方がぶれずに保たれている", c:2 },
+  { t:"顧客が誰かに自社をすすめる時、名前をすらすら挙げてくれる", c:1 },
+  { t:"目先の売上より大切にしている価値観が、社内にある", c:3 },
+  { t:"「よそと同じ」と言われないための工夫を、はっきり持っている", c:0 },
+  { t:"口約束でも、言ったことは必ず実行に移している", c:4 },
+  { t:"困りごとが起きた場面と、自社の名前が結びついて覚えられている", c:1 },
+  { t:"部署が違っても、社員の言うことに芯が通っている", c:5 },
+  { t:"広告や販促を、行き当たりばったりでなく計画的に出している", c:6 },
+  { t:"ブランドの担当や責任者が、経営の中に明確に置かれている", c:7 }
+];
+
+/* ===== カテゴリごとの解説・打ち手 ===== */
+const CAT_ADVICE = [
+  { // 0 独自性
+    desc:"ブランドの強さは、まず「他社と間違われないこと」から始まります。名前を伏せても自社だとわかる特徴がなければ、顧客は価格や納期でしか比べようがありません。機能の優劣ではなく、自社ならではの立ち位置を一言で言い表せるかが問われます。ここが定まると、その後の発信も体験の設計も、ぶれない軸を持てます。",
+    tips:[
+      "「なぜ他社ではなく自社なのか」を、価格・納期以外の言葉で一文にする",
+      "自社らしさを表す言葉を、社員数名で書き出し、重なる核を見つける",
+      "紹介文から社名を伏せて読み、自社だと言い当てられるか試す"
+    ]
+  },
+  { // 1 想起（裏づけは業態で出し分け）
+    desc:"どれだけ良い商品でも、買う場面で思い出してもらえなければ選ばれません。ブランドの成長は、この「思い出されやすさ」に大きく左右されます。今すぐ買わない相手にも接点を保ち、いざという時に真っ先に浮かぶ存在をめざします。忘れられない工夫を、意図してつくり続けることが要です。",
+    tips:[
+      "今すぐ買わない見込み客にも、定期的に接点を持ち続ける",
+      "「この分野といえば自社」と結びつく、覚えやすい切り口を一つ決める",
+      "展示会・ウェブ・資料など、思い出す機会をカレンダーで設計する"
+    ]
+  },
+  { // 2 一貫性
+    desc:"ロゴ・色・言葉・トーンがどの接点でもばらつくと、せっかくの記憶が積み上がりません。同じ資産を長く使い続けることが、思い出されやすさを支えます。営業資料もウェブも名刺も、同じ世界観で揃っているかを点検します。目新しさより、変えない粘り強さがブランドを育てます。",
+    tips:[
+      "ロゴ・色・決まり文句の使い方を、一枚のルールにまとめる",
+      "営業資料・ウェブ・名刺を並べ、トーンのズレを洗い出す",
+      "うまくいっている表現ほど、あえて変えずに使い続ける"
+    ]
+  },
+  { // 3 存在意義
+    desc:"「何のための会社か」が定まっていると、判断に迷った時の拠りどころになります。利益の先に「誰の生活をどう良くするか」を描けているかが問われます。掲げるだけでなく、日々の商品やサービスに実際に表れていることが大切です。経営者が自分の言葉で語れる状態を、まずめざします。",
+    tips:[
+      "「自社は誰の何を良くするために在るのか」を一文で言い表す",
+      "その一文が、直近の大きな判断に反映されていたか振り返る",
+      "経営者と現場が、同じ言葉で存在意義を語れるかすり合わせる"
+    ]
+  },
+  { // 4 信頼
+    desc:"信頼は、約束を守り続けた時間の積み重ねでしか育ちません。品質だけでなく、トラブル時の誠実な対応や、いつ頼んでもぶれない水準が問われます。「あの会社なら安心」と言ってもらえるかが、選ばれ続ける条件です。一度きりで終わらず、長く付き合う顧客の多さがその証しになります。",
+    tips:[
+      "顧客への約束のうち、守りきれていないものを一つ棚卸しする",
+      "トラブル対応の基準を決め、担当によるぶれをなくす",
+      "契約継続率や再依頼率を定点で見て、信頼の実態を測る"
+    ]
+  },
+  { // 5 社内浸透
+    desc:"ブランドは社外に届く前に、まず社内で立ち上がります。社員が自分の言葉で「何の会社か」を語れなければ、顧客接点でのふるまいはばらつきます。新しく入った人にまで価値が伝わり、現場の判断に自然と表れている状態をめざします。社員が誇りをもって自社を語れることが、いちばんの発信力になります。",
+    tips:[
+      "「自社は何の会社か」を、社員各自の言葉で語ってもらう場を持つ",
+      "新しく入った人に、大切にする価値がどう伝わっているか確かめる",
+      "現場のよい判断を、ブランドの考え方と結びつけて共有する"
+    ]
+  },
+  { // 6 投資バランス
+    desc:"目先の販促だけに偏ると、短期の売上は動いても、思い出される力は痩せていきます。すぐ成果にならないブランドづくりへの投資を、意図して確保できているかが問われます。景気が悪くなった時、真っ先に削られていないかも点検どころです。短期と長期の配分を、成り行きでなく意志で決めることが要です。",
+    tips:[
+      "販促費とブランドづくりの費用を分けて、いまの配分を数字で見る",
+      "すぐ売上にならない活動にも、年間予算の枠をあらかじめ確保する",
+      "短期と長期の配分方針を、経営の合意として文章にする"
+    ]
+  },
+  { // 7 経営接続
+    desc:"ブランドが現場の努力任せになっていると、成果は続きません。経営会議の議題として定期的に扱われ、状態を測る指標があることが強さの条件です。経営者がブランドを大切な資産と捉え、事業の成果と結びつけて語れているかが問われます。感覚ではなく、数字で認知や評判の変化を追う仕組みをめざします。",
+    tips:[
+      "ブランドの状態を測る指標を一つ決め、定点で追い始める",
+      "経営会議に、ブランドの議題を定期の枠として組み込む",
+      "ブランドの取り組みを、事業の成果と結びつけて報告する"
+    ]
+  }
+];
+
+/* ===== カテゴリごとの裏づけ研究（ev-item配列を返す） ===== */
+function evidenceFor(catIdx, biz){
+  switch(catIdx){
+    case 0:
+      return [{
+        name:"Kantar BrandZ（52市場・21,000超ブランド）",
+        text:"「違い（Difference）」が際立つブランドは、そうでないブランドの<b>2倍</b>成長しやすく、株価リターンへの<b>最大の寄与因子</b>でもあります。"
+      }];
+    case 1: {
+      const b2b = {
+        name:"LinkedIn B2B Institute × Ehrenberg-Bass研究所「95:5ルール」",
+        text:"法人顧客のうち、今すぐ買う状態にあるのは常時わずか<b>5%</b>。残る<b>95%</b>が「いざ買う時」に自社を思い出してくれるかが、ブランドの仕事です。"
+      };
+      const b2c = {
+        name:"Ehrenberg-Bass研究所（バイロン・シャープ『How Brands Grow』）",
+        text:"ブランドの成長は、買う場面でパッと思い浮かぶ「メンタルアベイラビリティ」に大きく左右されます。"
+      };
+      if(biz==="B2B") return [b2b];
+      if(biz==="B2C") return [b2c];
+      return [b2b, b2c];
+    }
+    case 2:
+      return [{
+        name:"Ehrenberg-Bass研究所 / Interbrand",
+        text:"ロゴ・色・タグラインなどの独自ブランド資産を<b>一貫して使い続ける</b>ことが想起を支えます。Interbrandのブランド強度評価でも「一貫性」は<b>10因子</b>の一つです。"
+      }];
+    case 3:
+      return [{
+        name:"Jim Stengel（元P&G世界マーケティング責任者）5万社・10年の研究",
+        text:"顧客の生活を良くする「理想」を軸にしたブランド上位50社の株式価値は、2000〜2011年に<b>393%</b>成長しました（同期間のS&amp;P500は<b>−7%</b>）。"
+      },{
+        name:"Kantar",
+        text:"存在意義が明確なブランドは、売上への寄与が<b>70%</b>高いと報告されています。"
+      }];
+    case 4:
+      return [{
+        name:"Edelmanトラストバロメーター2026",
+        text:"「ブランドを信頼できること」を購入の必須条件とする人は<b>88%</b>。品質（89%）とほぼ同じ重みを占めます。"
+      },{
+        name:"Edelmanトラストバロメーター2019",
+        text:"製品・顧客対応・社会的影響の3面で信頼されるブランドは、製品面だけのブランドより<b>21ポイント</b>高い<b>68%</b>が「買い続ける・薦める」と答えました。"
+      }];
+    case 5:
+      return [{
+        name:"Gallup Q12メタ分析（90カ国・18万超の事業単位）",
+        text:"従業員エンゲージメントが上位の事業単位は、下位より収益性<b>23%</b>・生産性<b>18%</b>高い。ブランドは社外に届く前に、社内で立ち上がります。"
+      }];
+    case 6:
+      return [{
+        name:"Binet &amp; Field（IPA・約1,000キャンペーン事例、2013）",
+        text:"ブランド構築<b>60</b>：短期販促<b>40</b>前後の配分が、市場シェア・利益率・価格決定力の持続的な向上で最も成果が高いと示されています。"
+      }];
+    case 7:
+      return [{
+        name:"McKinsey &amp; Company の調査報告",
+        text:"強いブランドを持つB2B企業は業績で<b>20%</b>上回り、ブランド認知の伸びが上位1/4の企業群はROICが下位群より<b>33%</b>高いと報告されています。"
+      }];
+    default:
+      return [];
+  }
+}
+
+/* ===== 総評（100点換算のスコア帯） ===== */
+const TIERS = [
+  { min:80, label:"ブランドが強い資産として働いている段階", text:"貴社は、ブランドを支える要素をバランスよく押さえられています。独自性から経営接続までが一本の線でつながり、ブランドが事業を支える資産として働いている状態です。これからは、この強さを変化する環境に合わせて更新し続けることが次の課題になります。" },
+  { min:60, label:"土台が整い、伸びしろが見える段階", text:"ブランドの土台は着実に整いつつあります。いくつかの領域で強みが見られる一方、要素どうしのつながりや一貫性には、まだ伸びしろが残ります。得点率の低いカテゴリを重点的に補強することで、ブランドの強さはさらに高まっていきます。" },
+  { min:40, label:"取り組みが断片的な段階", text:"ブランドへの取り組みは始まっていますが、全体としてはまだ断片的です。とりわけ土台となる独自性や存在意義、社内浸透に課題が残ることが多い段階です。優先順位をつけて、核となる要素から順に固めていくことをおすすめします。" },
+  { min:0,  label:"これからの取り組みという段階", text:"ブランドづくりは、これからの取り組みという段階です。まずは「他社と間違われない独自性」と「何のための会社かという存在意義」を言葉にし、社内で共通の理解をつくることが出発点になります。焦らず、土台から一つずつ整えていくことで、ブランドは事業を支える力になっていきます。" }
+];
+
+/* ===== 状態 ===== */
+let answers = new Array(50).fill(null);
+let current = 0;
+let bizType = "";
+
+/* ===== 画面遷移 ===== */
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
+  const el = document.getElementById(id);
+  el.classList.remove("hidden");
+  window.scrollTo(0,0);
+}
+function goType(){ show("screen-type"); }
+function selectType(t){
+  bizType = t;
+  current = 0;
+  show("screen-quiz");
+  renderQuestion();
+}
+
+/* ===== 質問描画（カテゴリ名は出さない） ===== */
+function renderQuestion(){
+  document.getElementById("qCount").textContent = (current+1) + " / 50";
+  document.getElementById("qText").textContent = QUESTIONS[current].t;
+  document.getElementById("progressFill").style.width = ((current)/50*100) + "%";
+
+  const choices = document.querySelectorAll("#screen-quiz .choice");
+  const scoreOrder = [3,2,1,0];
+  choices.forEach((btn,i)=>{
+    if(answers[current] === scoreOrder[i]) btn.classList.add("selected");
+    else btn.classList.remove("selected");
+  });
+
+  document.getElementById("backLink").disabled = (current===0);
+}
+function answer(score){
+  answers[current] = score;
+  if(current < 49){
+    current++;
+    renderQuestion();
+  } else {
+    document.getElementById("progressFill").style.width = "100%";
+    showResult();
+  }
+}
+function prevQuestion(){
+  if(current>0){ current--; renderQuestion(); }
+}
+
+/* ===== 結果計算 ===== */
+function categoryPercents(){
+  return CATEGORIES.map((c,idx)=>{
+    let sum=0, n=0;
+    QUESTIONS.forEach((q,i)=>{
+      if(q.c===idx){ sum += (answers[i]||0); n++; }
+    });
+    const max = n*3;
+    return { name:c.name, short:c.short, sub:c.sub, pct: Math.round(sum/max*100), raw:sum, max:max, idx:idx };
+  });
+}
+function tierFor(score){
+  for(const t of TIERS){ if(score>=t.min) return t; }
+  return TIERS[TIERS.length-1];
+}
+
+function showResult(){
+  const total = answers.reduce((a,b)=>a+(b||0),0); // 0-150
+  const scaled = Math.round(total/150*100);
+
+  document.getElementById("resultType").textContent = "業態：" + bizType;
+  document.getElementById("totalScore").innerHTML = scaled + "<span> / 100</span>";
+  const tier = tierFor(scaled);
+  document.getElementById("scoreTier").textContent = tier.label;
+  document.getElementById("summaryText").textContent = tier.text;
+
+  const cats = categoryPercents();
+  drawRadar(cats);
+  drawBars(cats);
+  drawTsubo(cats);
+
+  show("screen-result");
+}
+
+/* ===== レーダーチャート（SVG自前描画） ===== */
+function drawRadar(cats){
+  const size = 440;
+  const cx = size/2, cy = size/2;
+  const R = 150;
+  const n = cats.length;
+  const rings = [0.25,0.5,0.75,1];
+
+  function pt(i, r){
+    const ang = -Math.PI/2 + i*(2*Math.PI/n);
+    return [cx + r*Math.cos(ang), cy + r*Math.sin(ang)];
+  }
+
+  let svg = `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="8カテゴリのレーダーチャート">`;
+
+  rings.forEach(ring=>{
+    let pts=[];
+    for(let i=0;i<n;i++){ const p=pt(i,R*ring); pts.push(p[0].toFixed(1)+","+p[1].toFixed(1)); }
+    svg += `<polygon points="${pts.join(' ')}" fill="none" stroke="#e2e6ee" stroke-width="1"/>`;
+  });
+  for(let i=0;i<n;i++){
+    const p = pt(i,R);
+    svg += `<line x1="${cx}" y1="${cy}" x2="${p[0].toFixed(1)}" y2="${p[1].toFixed(1)}" stroke="#e2e6ee" stroke-width="1"/>`;
+  }
+  let dpts=[];
+  for(let i=0;i<n;i++){
+    const r = R * (cats[i].pct/100);
+    const p = pt(i, r);
+    dpts.push(p[0].toFixed(1)+","+p[1].toFixed(1));
+  }
+  svg += `<polygon points="${dpts.join(' ')}" fill="rgba(31,58,95,.18)" stroke="#1f3a5f" stroke-width="2"/>`;
+  for(let i=0;i<n;i++){
+    const r = R * (cats[i].pct/100);
+    const p = pt(i, r);
+    svg += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" fill="#1f3a5f"/>`;
+  }
+  for(let i=0;i<n;i++){
+    const p = pt(i, R+26);
+    let anchor="middle";
+    const dx = p[0]-cx;
+    if(dx>10) anchor="start";
+    else if(dx<-10) anchor="end";
+    svg += `<text x="${p[0].toFixed(1)}" y="${(p[1]+4).toFixed(1)}" font-size="12" fill="#1a2438" text-anchor="${anchor}">${cats[i].short}</text>`;
+    svg += `<text x="${p[0].toFixed(1)}" y="${(p[1]+18).toFixed(1)}" font-size="10" fill="#6b7488" text-anchor="${anchor}">${cats[i].pct}%</text>`;
+  }
+  svg += `</svg>`;
+  document.getElementById("radarWrap").innerHTML = svg;
+}
+
+/* ===== カテゴリ別バー ===== */
+function drawBars(cats){
+  let html="";
+  cats.forEach(c=>{
+    html += `<div class="cat-bar-row">
+      <div class="cat-bar-head"><span>${c.name}</span><span class="pct">${c.pct}%</span></div>
+      <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${c.pct}%"></div></div>
+    </div>`;
+  });
+  document.getElementById("catBars").innerHTML = html;
+}
+
+/* ===== 最優先のノビシロ（得点率60%未満を低い順に最大3件・最低2件） ===== */
+function drawTsubo(cats){
+  const sorted = [...cats].sort((a,b)=> a.pct - b.pct);
+  const under = sorted.filter(c=>c.pct < 60);
+  let picks;
+  if(under.length >= 3) picks = sorted.slice(0,3);
+  else if(under.length === 2) picks = sorted.slice(0,2);
+  else picks = sorted.slice(0,2); // 60%未満が1件以下でも最低2件
+
+  let html="";
+  picks.forEach((c,i)=>{
+    const adv = CAT_ADVICE[c.idx];
+    const evs = evidenceFor(c.idx, bizType);
+    const evHtml = evs.map(e=>`<div class="ev-item"><div class="ev-name">${e.name}</div><div class="ev-text">${e.text}</div></div>`).join("");
+    html += `<div class="tsubo">
+      <div class="tsubo-rank">ノビシロ ${i+1}</div>
+      <div class="tsubo-name">${c.name}</div>
+      <div class="tsubo-sub">${c.sub}</div>
+      <div class="tsubo-pct">得点率 ${c.pct}%</div>
+      <h4>解説</h4>
+      <p>${adv.desc}</p>
+      <h4>打ち手のヒント</h4>
+      <ul>${adv.tips.map(t=>`<li>${t}</li>`).join("")}</ul>
+      <div class="evidence">
+        <div class="ev-label">裏づけとなる研究</div>
+        ${evHtml}
+      </div>
+    </div>`;
+  });
+  document.getElementById("tsuboList").innerHTML = html;
+}
+
+/* ===== リスタート ===== */
+function restart(){
+  answers = new Array(50).fill(null);
+  current = 0;
+  bizType = "";
+  show("screen-intro");
+}
+</script>
+</body>
+</html>
