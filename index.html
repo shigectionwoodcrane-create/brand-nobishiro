@@ -7,8 +7,8 @@
 <style>
   :root{
     --ink:#1a2438;
-    --accent:#1f3a5f;
-    --accent-soft:#2f4d78;
+    --accent:#C7306B;
+    --accent-soft:#D4568B;
     --line:#e2e6ee;
     --bg:#f7f8fb;
     --card:#ffffff;
@@ -115,7 +115,7 @@
     color:var(--ink);
     transition:border-color .2s, background .2s;
   }
-  .type-btn:hover{border-color:var(--accent);background:#f6f9fd;}
+  .type-btn:hover{border-color:var(--accent);background:#fdf5f9;}
   .type-btn .t-title{font-size:18px;font-weight:700;color:var(--accent);}
   .type-btn .t-sub{font-size:13px;color:var(--muted);margin-top:4px;}
 
@@ -161,8 +161,8 @@
     cursor:pointer;
     transition:border-color .18s, background .18s;
   }
-  .choice:hover{border-color:var(--accent);background:#f6f9fd;}
-  .choice.selected{border-color:var(--accent);background:#eaf0f8;font-weight:600;}
+  .choice:hover{border-color:var(--accent);background:#fdf5f9;}
+  .choice.selected{border-color:var(--accent);background:#f9e9f1;font-weight:600;}
   .back-link{
     display:inline-block;
     margin-top:22px;
@@ -322,7 +322,7 @@
 
   <!-- 導入画面 -->
   <section id="screen-intro" class="screen">
-    <h1>ブランドのノビシロ診断 <span style="white-space:nowrap;">by Happy</span></h1>
+    <h1>ブランドのノビシロ診断 <span style="white-space:nowrap;">by <img src="data:image/png;base64,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" alt="Happy!" style="height:0.82em;vertical-align:-0.05em;"></span></h1>
     <p class="lead">BRAND HEADROOM DIAGNOSIS</p>
     <div class="card">
       <p class="desc">自社のブランドに、あとどれだけ伸びる余地があるか。50問・約7分の設問に答えると、その場で次の3つが表示されます。</p>
@@ -758,11 +758,11 @@ function drawRadar(cats){
     const p = pt(i, r);
     dpts.push(p[0].toFixed(1)+","+p[1].toFixed(1));
   }
-  svg += `<polygon points="${dpts.join(' ')}" fill="rgba(31,58,95,.18)" stroke="#1f3a5f" stroke-width="2"/>`;
+  svg += `<polygon points="${dpts.join(' ')}" fill="rgba(199,48,107,.18)" stroke="#C7306B" stroke-width="2"/>`;
   for(let i=0;i<n;i++){
     const r = R * (cats[i].pct/100);
     const p = pt(i, r);
-    svg += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" fill="#1f3a5f"/>`;
+    svg += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" fill="#C7306B"/>`;
   }
   for(let i=0;i<n;i++){
     const p = pt(i, R+26);
